@@ -6,6 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="VieillesClasses\**" />
+    <EmbeddedResource Remove="VieillesClasses\**" />
+    <None Remove="VieillesClasses\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Networks\PoolingNeuralNetwork.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.7.0" />
   </ItemGroup>
 

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 
-namespace NEURAL
+namespace CNN
 {
     class NetworkTrainer
     {

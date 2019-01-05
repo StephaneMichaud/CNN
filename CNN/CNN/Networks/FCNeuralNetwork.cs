@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 using System.IO;
 
-namespace NEURAL
+namespace CNN
 {
     /// <summary>
     /// Class qui devrait etre plus performante pour les neurals networks
@@ -46,9 +46,7 @@ namespace NEURAL
         /// <summary>
         /// Nombre de layer du neuralNetwork. Les inputs ne compte pas.
         /// </summary>
-        public int NbLayer { get { return WeightedInput.Length; } }
-
-        
+        public int NbLayer { get { return WeightedInput.Length; } }     
 
 
         public FCNeuralNetwork(int nbInputs, int[] structure)
@@ -103,7 +101,7 @@ namespace NEURAL
                 WeightedInput[i] = Vector<double>.Build.Dense(structure[i], 0);                                
                 ActivationValues[i] = Vector<double>.Build.Dense(structure[i], 0);
                 //Instancie les biais avec des valeurs entre 0 et -1
-                Biais[i] = Vector<double>.Build.Dense(structure[i], v=>0/*(2 * RandomGenerateur.NextDouble() - 1)/100*/);
+                Biais[i] = Vector<double>.Build.Dense(structure[i], v=>0);
             }
             ActivationEquations[NbLayer-1] = new SoftMaxActivation();
         }
@@ -182,9 +180,10 @@ namespace NEURAL
         /// Permet de sauvegarder la valeurs du neural network dans un fichier binaire
         /// </summary>
         /// <param name="pathName">Chemin et nom du fichier qui sera creer</param>
-        public void SaveAsBinaryFile(string pathName)
+
+        public void Save(FileStream fileReader)
         {
-            BinaryWriter bsWriter = new BinaryWriter(new FileStream(pathName, FileMode.Create));
+            BinaryWriter bsWriter = new BinaryWriter(fileReader);
 
             bsWriter.Write(NbNecessaryInputs);
             bsWriter.Write(WeightedInput.Length);
@@ -207,13 +206,11 @@ namespace NEURAL
                 {
                     for (int c = 0; c < Weights[i].ColumnCount; c++)
                     {
-                        bsWriter.Write(Weights[i][r,c]);
+                        bsWriter.Write(Weights[i][r, c]);
                     }
                 }
             }
-            bsWriter.Close();
         }
-
     }
 
     #region EquationActivation
