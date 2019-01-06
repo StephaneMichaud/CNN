@@ -75,7 +75,6 @@ namespace CNN.Networks
             //On cree la matrice avec la padding
             Matrix<double>[] image = new Matrix<double>[Depth];
             Matrix<double>[] outputVolume = new Matrix<double>[NbFilters];
-
             for (int d = 0; d < Depth; ++d)
             { 
                 image[d] = Matrix<double>.Build.Dense(NbRowInput + 2 * NbRowPadding, NbColumnsInput + 2 * NbColumnsPadding, 0);
@@ -83,25 +82,29 @@ namespace CNN.Networks
                 image[d].SetSubMatrix(NbRowPadding, NbColumnsPadding, input[d]);
             }
             FillLastInputs(image);
-
+            //LA MAGIE SE PASSE SUR CETTE LIGNE IMPORTANT!!!!!
             Matrix<double> result= Filters*LastInputs;
-            
+            //On remet nos outputs selon un tableau de matrices
             for (int i = 0; i < NbFilters; ++i)
             {
                 outputVolume[i] = RowToMatrix(result.Row(i), i);
             }
-            
             return outputVolume;
         }
         private Matrix<double> RowToMatrix(Vector<double> row,int index)
-        {//x = 
+        {
             return Matrix<double>.Build.Dense(NbRowOutput,NbColumnsOutput,(x,y)=>Math.Max(row[y*NbRowOutput+x]+Biases[index],0));
         }
 
         private void FillLastInputs(Matrix<double>[] image)
         {
-            //On instancie LastInputs sous la forme d'une matrice de colonnes ou chque colonnes seront un vecteur
+            //On instancie LastInputs sous la forme d'une matrice de colonnes ou chaque colonnes seront un vecteur
             //representant les valeurs d'une sous section de toutes les profondeurs une apres l'autre
+            //Est 4D lol, imagine toi un e/s\pace 4D bro lol
+            //HAS SCIENCE GONE TOO FAR/?!/!  \
+            //ILLUMINAUGHTRY CUN=TFIRMD?/ ''' \ 
+            //                         /   0   \
+            //                        /_________\
             LastInputs = Matrix<double>.Build.Dense(DimensionOfFilter * DimensionOfFilter * Depth, NbRowOutput * NbColumnsOutput);
             //Image sous forme d'un vecteur
 
@@ -125,43 +128,5 @@ namespace CNN.Networks
                 }
             }
         }
-
-        
-        #region Old FeedForward
-        #endregion
-
-        /*public Matrix<double>[] FeedForward(Matrix<double> input)
-        {
-            //On cree la matrice avec la padding
-            Matrix<double> bonneMatrice = Matrix<double>.Build.Dense(NbRowInput + 2 * NbRowPaddingPadding, NbColumnsInput + 2 * NbColumnsPadding, 0);
-            //On set les valeurs
-            bonneMatrice.SetSubMatrix(NbRowPaddingPadding, NbColumnsPadding, input);
-
-
-            //double[,] output = new double[bonneMatrice.RowCount, bonneMatrice.ColumnCount];
-            Matrix<double>[] outputVolume = new Matrix<double>[NbFilters];
-           
-            double result;
-            for (int l = 0; l < NbFilters; ++l)//Foreach kernel...
-            {
-                Matrix<double> output = Matrix<double>.Build.Dense(bonneMatrice.RowCount, bonneMatrice.ColumnCount);
-                for (int i = 0; i*Stride < bonneMatrice.RowCount; ++i)//On the height...
-                {
-                    for (int j = 0; j*Stride < bonneMatrice.ColumnCount; ++j)//On the width...
-                    {
-                        result = 0;
-                        for (int k = 0; k < Depth; ++k)//On the depth...
-                        {
-                            result += Matrix<double>.op_DotMultiply(bonneMatrice.SubMatrix(i * Stride, j * Stride, DimensionOfFilter, DimensionOfFilter),
-                                Filters[l][k]).ColumnSums().Sum();
-                        }
-                        output[i, j] = result + Biases[l];
-                    }
-                }
-                outputVolume[l] = output;
-            }
-
-            return outputVolume;
-        }*/
     }
 }
