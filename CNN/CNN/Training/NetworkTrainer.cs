@@ -96,6 +96,7 @@ namespace CNN
                 deltatemp[l] = Vector<double>.op_DotMultiply(Subject.Weights[l+1].TransposeThisAndMultiply(deltatemp[l+1]) ,
                     Subject.ActivationEquations[l].DerivativeOperation( Subject.WeightedInput[l]) );
             }
+
             //On calcule les gradiants pour chaque weights en commencant par la premiere matrices en utilisant les inputs comme
             //remplacement a la couche d'activation
             var builder = Matrix<double>.Build;

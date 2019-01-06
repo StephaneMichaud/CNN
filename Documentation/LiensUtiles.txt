@@ -2,3 +2,5 @@ https://datascience.stackexchange.com/questions/11699/backprop-through-max-pooli
 https://grzegorzgwardys.wordpress.com/2016/04/22/8/
 http://cs231n.github.io/convolutional-networks/
 https://medium.com/@RaghavPrabhu/understanding-of-convolutional-neural-network-cnn-deep-learning-99760835f148
+https://stats.stackexchange.com/questions/175132/backpropagation-between-pooling-and-convolutional-layers
+https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199
