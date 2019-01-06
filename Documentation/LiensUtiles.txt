@@ -4,3 +4,4 @@ http://cs231n.github.io/convolutional-networks/
 https://medium.com/@RaghavPrabhu/understanding-of-convolutional-neural-network-cnn-deep-learning-99760835f148
 https://stats.stackexchange.com/questions/175132/backpropagation-between-pooling-and-convolutional-layers
 https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199
+https://www.cs.toronto.edu/~kriz/cifar.html
