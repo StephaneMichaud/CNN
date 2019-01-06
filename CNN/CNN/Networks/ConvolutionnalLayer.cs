@@ -14,8 +14,8 @@ namespace CNN.Networks
 
         /// <summary>
         /// Filtres qui seront iterer sur les inputs donnes. Sont sous la forme tel que Filtres[i][j]
-        /// où i(row) représente un filtre et j(col) une valeur de ce filtre. Les valeurs du filtre(j) sont en ordre 
-        /// de profondeur te lque si un filtre a une pprofondeur double, les données sont mis dans l'ordre:
+        /// où i(row) représente un filtre et j(col) une valeur d'une connexion dans ce filtre. Les valeurs du filtre(j) sont en ordre 
+        /// de profondeur tel que si un filtre a une profondeur double, les données sont mis dans l'ordre:
         /// j11,j12,j13,j14...pour la premiere profondeur suivi par j21,j22,j23,j24... qui sont les valeurs
         /// de la deuxième profondeur. Cette matrice sera multiplié avec la matrice LastInputs tel que Filters*LastInputs
         /// afin de calculer une matrice contenant tout les weighted values des outputs.
@@ -40,23 +40,43 @@ namespace CNN.Networks
         /// </summary>
         public int Stride { get; private set; }
         /// <summary>
-        /// Nombre de colonnes
+        /// Nombre de lignes(row) de padding qui seront ajoute d'un coté de la matrice des inputs.(P)
         /// </summary>
         public int NbRowPadding { get; private set; }
         /// <summary>
-        /// 
+        /// Nombre de colonnes(columns) de padding qui seront ajoute d'un coté de la matrice des inputs.(P)
         /// </summary>
         public int NbColumnsPadding { get; private set; }
 
+
         //Servent pour dimension des inputs
+        /// <summary>
+        /// Taille en y de volume de l'input. Sera le nombre de lignes des differentes matrices de profondeurs
+        /// </summary>
         public int NbRowInput { get; private set; }
+        /// <summary>
+        /// Taille en x du volume de l'input. Sera le nombre de colonnes des differentes matrices de profondeurs
+        /// </summary>
         public int NbColumnsInput { get; private set; }
+        /// <summary>
+        /// Taille en z du volume de l'input. Sera le nombre de matrices de profondeurs.
+        /// </summary>
         public int Depth { get; private set; }
-
+        /// <summary>
+        /// Le nombre de rangées dans le volume de sortie.
+        /// </summary>
         public int NbRowOutput { get; private set; }
+        /// <summary>
+        /// Le nombre de colonnes dans le volume de sortie.
+        /// </summary>
         public int NbColumnsOutput { get; private set; }
-
+        /// <summary>
+        /// Nombre de filtres individuels dans cette couche. Correspond aussi abstract a la taille en Z du output volume.
+        /// </summary>
         public int NbFilters{ get { return Filters.RowCount; } }
+        /// <summary>
+        /// Dimensions (carrée) de tout les filtres appartenant à cette couche.
+        /// </summary>
         public int DimensionOfFilter { get; private set; }
 
 
@@ -72,29 +92,46 @@ namespace CNN.Networks
             Depth = depthInput;
             Stride = 1;
             DimensionOfFilter = dimensionOfFilters;
+
+            //Apres ce point, l'ordre des ces affectations est important
             InstancierFilters(nbFilters);
             InstancierBiases();
+
+            //Instancie le padding
             NbRowPadding = (DimensionOfFilter - 1) / 2;
             NbColumnsPadding = (DimensionOfFilter - 1) / 2;
 
-            NbRowOutput = ((NbRowInput+2*NbRowPadding - DimensionOfFilter) / Stride) + 1;
-            NbColumnsOutput = ((NbColumnsInput + 2 * NbColumnsPadding - DimensionOfFilter) / Stride) + 1;
+            //Instancie les valeurs de la taille du volume de l'output afin d'éviter a tout le temps les recalculés.
+            NbRowOutput = ((NbRowInput + 2*NbRowPadding - DimensionOfFilter) / Stride) + 1;
+            NbColumnsOutput = ((NbColumnsInput + 2*NbColumnsPadding - DimensionOfFilter) / Stride) + 1;
 
         }
-
+        /// <summary>
+        /// Instancie tout les filtres de cette couche avec leur nombre. Leur dimension est obtenue à l'aide d'un attribut
+        /// </summary>
+        /// <param name="nbFilters">Nombre de filtre devant être créés</param>
         private void InstancierFilters(int nbFilters)
         {
             Filters = Matrix<double>.Build.Dense(nbFilters,DimensionOfFilter*DimensionOfFilter*Depth,
                 (x,y)=> RandomGenerator.GenerateRandomDouble(-1, 1));
         }
-
+        /// <summary>
+        /// Instancie tout les biais de cette couche avec le nombre de filtres. Leur valeurs sont initialement 0.
+        /// </summary>
         private void InstancierBiases()
         {
             Biases = new double[NbFilters];
         }
-
+        /// <summary>
+        /// Prends le volume d'entrée (généralement une image) et applique les convolutions des filtres, les biais et la fonction d'activation (ReLu)
+        /// puis retourne le volume de sortie.
+        /// </summary>
+        /// <param name="input">Volume d'entré. Doit correspondre aux dimensions données au constructeur</param>
+        /// <returns>Le volume de sortie.</returns>
         public Matrix<double>[] FeedForward(Matrix<double>[] input)
         {
+            //FAIRE VÉRIFICATION DES DIMENSIONS DE INPUT!!!!!!!!!!!!
+
             //On cree la matrice avec la padding
             Matrix<double>[] image = new Matrix<double>[Depth];
             Matrix<double>[] outputVolume = new Matrix<double>[NbFilters];
@@ -107,18 +144,29 @@ namespace CNN.Networks
             FillLastInputs(image);
             //LA MAGIE SE PASSE SUR CETTE LIGNE IMPORTANT!!!!!
             Matrix<double> result= Filters*LastInputs;
-            //On remet nos outputs selon un tableau de matrices
+            //On remet nos outputs selon un tableau de matrices (ptete mettre dans fonction)
             for (int i = 0; i < NbFilters; ++i)
             {
                 outputVolume[i] = RowToMatrix(result.Row(i), i);
             }
             return outputVolume;
         }
+        /// <summary>
+        /// Prend un vecteur ligne du résultat de la multiplication matricielle Filters*LastInputs et le tranforme en matrice 2d
+        ///tout en appliquant les biais et la fonction d'acttivation (Relu) aux valeurs de cette matrice.
+        /// </summary>
+        /// <param name="row">Vecteur ligne qui sera transformé en matrice 2D pour le volume de sortie</param>
+        /// <param name="index">Index utilisé pour additioné le biais correspondant aux donnés de la matrice 2D.</param>
+        /// <returns></returns>
         private Matrix<double> RowToMatrix(Vector<double> row,int index)
         {
             return Matrix<double>.Build.Dense(NbRowOutput,NbColumnsOutput,(x,y)=>Math.Max(row[y*NbRowOutput+x]+Biases[index],0));
         }
-
+        /// <summary>
+        /// Pour faire l'application des convolutions, l'implémentation utilise deux matrices construites à partir de l'image et des filtres.
+        /// La matrice LastInputs correspond à 'écraser' chacune des sections (endroits où sont appliqués les filtres) en colonnes.
+        /// </summary>
+        /// <param name="image">Le volume d'entré avec padding ajouté.</param>
         private void FillLastInputs(Matrix<double>[] image)
         {
             //On instancie LastInputs sous la forme d'une matrice de colonnes ou chaque colonnes seront un vecteur
@@ -130,21 +178,24 @@ namespace CNN.Networks
             //                        /_________\
             LastInputs = Matrix<double>.Build.Dense(DimensionOfFilter * DimensionOfFilter * Depth, NbRowOutput * NbColumnsOutput);
             //Image sous forme d'un vecteur
-
+            //Compteur utilisé pour savoir dans quelle sous-section de l'image nous sommes.
             int cmptStrideHor = 0;
             int cmptStrideVertical = 0;
             for (int col = 0; col < LastInputs.ColumnCount; ++col)//Remplir le last input avec les bonnes valeurs
             {
                 Vector<double> colTemp = Vector<double>.Build.Dense(DimensionOfFilter * DimensionOfFilter * Depth);
-                for (int d = 0; d < Depth; ++d)
+                for (int d = 0; d < Depth; ++d)//remplir la colonne temporaire avec une sous-section de l'image 
                 {
+                    //Chaque dimension de profondeur sont ajouté l'une après l'autre dans le vecteur colonne.
                     colTemp.SetSubVector(d * DimensionOfFilter * DimensionOfFilter, DimensionOfFilter * DimensionOfFilter,
                         Vector<double>.Build.DenseOfArray(image[d].SubMatrix(cmptStrideVertical * Stride, DimensionOfFilter, cmptStrideHor * Stride, DimensionOfFilter).ToColumnMajorArray()));
                 }
                 //On met la colonne dans lastInputs
                 LastInputs.SetColumn(col, colTemp);
+                //On incrémente les compteurs de sous-sections
                 cmptStrideHor++;
-                if (cmptStrideHor == (((image[0].ColumnCount - DimensionOfFilter) / Stride) + 1))
+                //Si on arrive a la fin d'une itération horizontale, on descend et revient au début a la gauche.
+                if (cmptStrideHor == NbColumnsOutput)
                 {
                     cmptStrideHor = 0;
                     cmptStrideVertical++;

@@ -8,24 +8,16 @@ namespace CNN
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            int i = 0;
-            Matrix<double> test = Matrix<double>.Build.Dense(3, 3,(x,y)=> i++);
-            Console.WriteLine(test);
-            double[] colMajorArray = test.ToColumnMajorArray();
-            Console.WriteLine();
-            ConvolutionnalLayer testCNN = new ConvolutionnalLayer(3, 3, 3, 2, 2);
+            ConvolutionnalLayer testCNN = new ConvolutionnalLayer(1080, 1920, 3, 24, 5);
             Matrix<double>[] input = new Matrix<double>[3];
             //double[] allo = new double[3];
-            double[,] layer1 = { { 1, 2, 8 }, { 4, 3, 23 }, { 6, 5, 10 } };
-            input[0] = Matrix<double>.Build.DenseOfArray(layer1);
-            Console.WriteLine(input[0].SubMatrix(0, 2, 0, 2));
-            input[1] = Matrix<double>.Build.Dense(3, 3, 4);
-            input[2] = Matrix<double>.Build.Dense(3, 3, 8);
-            testCNN.FeedForward(input);
+            input[0] = Matrix<double>.Build.Dense(1080, 1920, (x,y)=> RandomGenerator.GenerateRandomDouble(0, 1));
+            input[1] = Matrix<double>.Build.Dense(1080, 1920, (x, y) => RandomGenerator.GenerateRandomDouble(0, 1));
+            input[2] = Matrix<double>.Build.Dense(1080, 1920, (x, y) => RandomGenerator.GenerateRandomDouble(0, 1));
+            Matrix<double>[] output=testCNN.FeedForward(input);
             
-            for (int j = 0; j < colMajorArray.Length; ++j)
-                Console.WriteLine(colMajorArray[j]);
+            for (int j = 0; j < output.Length; ++j)
+                Console.WriteLine(output[j]);
             Console.ReadKey();
 
         }
